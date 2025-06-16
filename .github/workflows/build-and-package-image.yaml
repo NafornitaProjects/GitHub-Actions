@@ -1,0 +1,58 @@
+name: Build Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      app_name: { required: true, type: string }
+    outputs:
+      image_tag:
+        value: ${{ jobs.build.outputs.image_tag }}
+    secrets:
+      REGISTRY: { required: true }
+
+jobs:
+  build:
+    runs-on: self-hosted
+    outputs:
+      image_tag: ${{ steps.set_tag.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate Inputs
+        run: |
+          if [ -z "${{ inputs.app_name }}" ]; then
+            echo "Missing app_name input" && exit 1
+          fi
+
+      - name: Set image tag
+        id: set_tag
+        run: echo "image_tag=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-docker-
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache \
+            -t ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }} .
+
+      - name: Save image as tar
+        run: |
+          docker save -o image.tar ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }}
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ github.sha }}
+          path: image.tar
+          retention-days: 14
