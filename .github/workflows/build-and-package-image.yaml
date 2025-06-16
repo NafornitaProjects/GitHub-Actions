@@ -4,6 +4,8 @@ on:
   workflow_call:
     inputs:
       app_name: { required: true, type: string }
+      dockerfile: { required: false, type: string, default: 'Dockerfile' }
+      context: { required: false, type: string, default: '.' }
     outputs:
       image_tag:
         value: ${{ jobs.build.outputs.image_tag }}
@@ -42,7 +44,9 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            -t ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }} .
+            -f ${{ inputs.dockerfile }} \
+            -t ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }} \
+            ${{ inputs.context }}
 
       - name: Save image as tar
         run: |
