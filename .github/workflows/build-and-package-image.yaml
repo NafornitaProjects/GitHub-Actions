@@ -42,8 +42,6 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache \
             -t ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }} .
 
       - name: Save image as tar
