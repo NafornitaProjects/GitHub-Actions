@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install OpenTofu
+        run: |
+          curl -sSfL https://get.opentofu.org/install.sh | sh
+          echo "$HOME/.opentofu/bin" >> $GITHUB_PATH
+
       - name: Run Terraform for environment
         working-directory: infra/terraform/environments/${{ inputs.environment }}
         run: |
