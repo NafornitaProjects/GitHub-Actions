@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Run Terraform for environment
+        working-directory: infra/terraform/environments/${{ inputs.environment }}
         run: |
-          cd terraform/environments/${{ inputs.environment }}
           tofu init
           tofu apply -auto-approve -var="app_name=${{ inputs.app_name }}"
