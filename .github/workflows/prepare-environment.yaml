@@ -23,9 +23,8 @@ jobs:
 
       - name: Setup kubeconfig for Terraform
         run: |
-          mkdir -p infra/terraform/environments/${{ inputs.environment }}
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > infra/terraform/environments/${{ inputs.environment }}/kubeconfig
-          echo "KUBECONFIG=$PWD/infra/terraform/environments/${{ inputs.environment }}/kubeconfig" >> $GITHUB_ENV
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
+          echo "KUBECONFIG=$PWD/kubeconfig" >> $GITHUB_ENV
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
