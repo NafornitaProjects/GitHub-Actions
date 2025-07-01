@@ -26,7 +26,7 @@ jobs:
           mkdir -p infra/terraform/environments/${{ inputs.environment }}
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d \
             > infra/terraform/environments/${{ inputs.environment }}/kubeconfig
-          echo "KUBECONFIG=$PWD/infra/terraform/environments/${{ inputs.environment }}/kubeconfig" \
+          echo "KUBECONFIG=$(pwd)/infra/terraform/environments/${{ inputs.environment }}/kubeconfig" \
             >> $GITHUB_ENV
 
       - name: Terraform Init + Apply
