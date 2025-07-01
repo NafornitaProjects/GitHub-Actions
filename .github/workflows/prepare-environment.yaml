@@ -3,17 +3,27 @@ name: Prepare environment
 on:
   workflow_call:
     inputs:
-      app_name: { required: true, type: string }
-      environment: { required: true, type: string }
+      app_name:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
 
 jobs:
   terraform:
     runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v3
+    defaults:
+      run:
+        shell: bash
 
-      - name: Run Terraform for environment
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Terraform Init + Apply
         working-directory: infra/terraform/environments/${{ inputs.environment }}
         run: |
+          echo "Deploying app: ${{ inputs.app_name }} to environment: ${{ inputs.environment }}"
           tofu init
-          tofu apply -auto-approve -var="app_name=${{ inputs.app_name }}"
+          tofu apply -auto-approve -var-file="terraform.tfvars"
