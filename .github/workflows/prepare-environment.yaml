@@ -21,8 +21,16 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Setup kubeconfig for Terraform
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ${{ github.workspace }}/kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
       - name: Terraform Init + Apply
         working-directory: infra/terraform/environments/${{ inputs.environment }}
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
           echo "Deploying app: ${{ inputs.app_name }} to environment: ${{ inputs.environment }}"
           tofu init
