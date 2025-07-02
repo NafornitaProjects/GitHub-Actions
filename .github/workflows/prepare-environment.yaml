@@ -26,12 +26,9 @@ jobs:
           mkdir -p infra/terraform/environments/${{ inputs.environment }}
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d \
             > infra/terraform/environments/${{ inputs.environment }}/kubeconfig
-          echo "KUBECONFIG=$(pwd)/infra/terraform/environments/${{ inputs.environment }}/kubeconfig" \
-            >> $GITHUB_ENV
 
       - name: Terraform Init + Apply
         working-directory: infra/terraform/environments/${{ inputs.environment }}
         run: |
-          echo "Deploying app: ${{ inputs.app_name }} to environment: ${{ inputs.environment }}"
           tofu init
           tofu apply -auto-approve -var-file="terraform.tfvars"
