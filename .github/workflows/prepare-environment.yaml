@@ -21,13 +21,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup kubeconfig for Terraform
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-
       - name: Terraform Init + Apply
         working-directory: infra/terraform/environments/${{ inputs.environment }}
         run: |
