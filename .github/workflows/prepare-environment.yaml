@@ -23,9 +23,10 @@ jobs:
 
       - name: Setup kubeconfig for Terraform
         run: |
-          mkdir -p infra/terraform/environments/${{ inputs.environment }}
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d \
-            > infra/terraform/environments/${{ inputs.environment }}/kubeconfig
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
       - name: Terraform Init + Apply
         working-directory: infra/terraform/environments/${{ inputs.environment }}
