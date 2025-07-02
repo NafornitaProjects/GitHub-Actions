@@ -21,8 +21,38 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Terraform Init + Apply
+      - name: Init & Plan
+        id: plan
+        working-directory: infra/terraform/environments/${{ inputs.environment }}
+        continue-on-error: true
+        run: |
+          set -e
+          # initialize without prompts
+          tofu init -input=false
+          set +e
+          # create a plan and capture its exit code
+          tofu plan \
+            -detailed-exitcode \
+            -out=tfplan \
+            -var-file="terraform.tfvars"
+          PLAN_EXIT=$?
+          echo "plan_exit=$PLAN_EXIT" >> $GITHUB_OUTPUT
+          # decide what to do next
+          if [ $PLAN_EXIT -eq 0 ]; then
+            echo "No changes detected; skipping apply."
+            exit 0
+          elif [ $PLAN_EXIT -eq 2 ]; then
+            echo "Changes detected; will apply."
+            exit 0
+          else
+            echo "Plan failed with exit code $PLAN_EXIT."
+            exit $PLAN_EXIT
+          fi
+
+      - name: Apply changes
+        if: steps.plan.outputs.plan_exit == '2'
         working-directory: infra/terraform/environments/${{ inputs.environment }}
         run: |
-          tofu init
-          tofu apply -auto-approve -var-file="terraform.tfvars"
+          tofu apply \
+            -auto-approve \
+            -var-file="terraform.tfvars"
