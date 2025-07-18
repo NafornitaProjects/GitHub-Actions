@@ -1,0 +1,33 @@
+name: Run Terraform
+
+on:
+  workflow_call:
+    inputs:
+      working_dir: { required: true, type: string }
+      var_file: { required: false, type: string, default: 'terraform.tfvars' }
+    secrets: {}
+
+jobs:
+  terraform:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Init & Plan
+        id: plan
+        working-directory: ${{ inputs.working_dir }}
+        continue-on-error: true
+        run: |
+          set -e
+          tofu init -input=false
+          set +e
+          tofu plan \
+            -detailed-exitcode \
+            -out=tfplan \
+            -var-file="${{ inputs.var_file }}"
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Apply
+        if: steps.plan.outputs.exit_code == '2'
+        working-directory: ${{ inputs.working_dir }}
+        run: tofu apply -auto-approve -var-file="${{ inputs.var_file }}"
