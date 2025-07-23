@@ -46,6 +46,7 @@ jobs:
           docker build \
             -f ${{ inputs.dockerfile }} \
             -t ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }} \
+            -t ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:latest \
             ${{ inputs.context }}
 
       - name: Push Docker image
