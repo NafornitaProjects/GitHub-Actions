@@ -51,7 +51,9 @@ jobs:
 
       - name: Push Docker image
         if: inputs.push == true
-        run: docker push ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }}
+        run: |
+          docker push ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:${{ github.sha }}
+          docker push ${{ secrets.REGISTRY }}/${{ inputs.app_name }}:latest
 
       - name: Save image artifact
         if: inputs.push == false
