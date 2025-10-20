@@ -1,0 +1,73 @@
+app:
+  name: webapp
+
+labels:
+  owner: edwardnafornita
+  app: webapp
+
+replicaCount: 1
+
+image:
+  repository: registry.edwardnafornita.com/webapp
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+  annotations: {}           # can set: {"prometheus.io/scrape":"true"}
+
+probes:
+  liveness:
+    enabled: true
+    path: /api/health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readiness:
+    enabled: true
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+ingress:
+  enabled: true
+  className: ""
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: cloudflare-issuer
+  hosts:
+    - host: example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    enabled: true
+    secretName: example-com-tls
+
+config:
+  enabled: false
+  data: {}
+
+envFrom:
+  configMap: ""
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+
+pod:
+  annotations: {}
+  labels: {}
+
+extraObjects: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
