@@ -1,0 +1,14 @@
+{
+  "release-type": "helm",
+  "packages": {
+    "webapp": {
+      "component": "webapp",
+      "path": "charts/webapp"
+    }
+  },
+  "plugins": [
+    {
+      "type": "helm- ChartYaml"
+    }
+  ]
+}
