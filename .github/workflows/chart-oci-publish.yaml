@@ -1,0 +1,50 @@
+name: chart-oci-publish
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  CHART_DIR: charts/webapp
+  OCI_REPO: ghcr.io/${{ github.repository_owner }}/charts
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.15.2
+
+      - name: Extract version from release tag
+        id: v
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # Expect tags like "webapp-1.2.3"
+          VER="${TAG#webapp-}"
+          echo "ver=$VER" >> $GITHUB_OUTPUT
+
+      - name: "Sanity: align Chart.yaml version to release"
+        run: |
+          sed -i "s/^version:.*/version: ${{ steps.v.outputs.ver }}/" "$CHART_DIR/Chart.yaml"
+          grep -E "^version: " "$CHART_DIR/Chart.yaml"
+
+      - name: Login to GHCR (OCI)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io \
+            -u ${{ github.actor }} --password-stdin
+
+      - name: Package chart
+        run: |
+          mkdir -p dist
+          helm package "$CHART_DIR" --destination dist
+
+      - name: Push to GHCR (OCI)
+        run: |
+          FILE=$(ls dist/*.tgz)
+          helm push "$FILE" oci://${{ env.OCI_REPO }}
