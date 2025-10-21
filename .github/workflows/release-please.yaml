@@ -1,4 +1,5 @@
 name: release-please
+
 on:
   push:
     branches: [ main ]
@@ -6,6 +7,7 @@ on:
       - 'charts/webapp/**'
       - '.github/release-please-config.json'
       - '.release-please-manifest.json'
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -19,4 +21,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: .github/release-please-config.json
-          manifest-file: charts/.release-please-manifest.json
+          manifest-file: .release-please-manifest.json
